@@ -6,73 +6,83 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _originController = TextEditingController();
-  final _desitnationController = TextEditingController();
+  String _origin = ''.toLowerCase();
+  String _destination = ''.toLowerCase();
+  String _matchingBusName = '';
 
-  void _submitData() {
-    if (_desitnationController.text.isEmpty) {
-      return;
+  final List<Map<String, dynamic>> _buses = [
+    {
+      'busName': 'Achim Paribahan',
+      'locations': ['khilkhet', 'airport', 'rampura'],
+    },
+    {
+      'busName': 'Victor',
+      'locations': ['mohakhali', 'gulistan', 'sydabad'],
+    },
+  ];
+
+  void _findMatchingBus() {
+    for (int i = 0; i < _buses.length; i++) {
+      List<String> busLocations = _buses[i]['locations'];
+      if (busLocations.contains(_origin) &&
+          busLocations.contains(_destination)) {
+        setState(() {
+          _matchingBusName = _buses[i]['busName'];
+        });
+        break;
+      }
     }
-    final enteredOrigin = _originController.text;
-    final enteredDestination = _desitnationController.text;
-    print(enteredOrigin);
-    print(enteredDestination);
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar(
-      title: const Text(
-        'Dhaka Bus Route',
-        textAlign: TextAlign.center,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Bus Finder'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Origin',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _origin = value.toLowerCase();
+                });
+              },
+            ),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Destination',
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _destination = value.toLowerCase();
+                });
+              },
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _findMatchingBus,
+              child: Text('Find Bus'),
+            ),
+            SizedBox(height: 16.0),
+            _matchingBusName.isNotEmpty
+                ? Text(
+                    'Matching Bus: $_matchingBusName',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : SizedBox.shrink(),
+          ],
+        ),
       ),
     );
-    return Scaffold(
-        appBar: appBar,
-        body: SingleChildScrollView(
-          child: Card(
-            child: Container(
-              child: Column(
-                children: [
-                  Container(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(labelText: 'Origin'),
-                            controller: _originController,
-                          ),
-                        ),
-                        SizedBox(width: 14),
-                        Expanded(
-                          child: TextField(
-                            decoration:
-                                InputDecoration(labelText: 'Destination'),
-                            controller: _desitnationController,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      OutlinedButton(
-                        onPressed: _submitData,
-                        child: Text(
-                          'Search',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: TextButton.styleFrom(
-                            backgroundColor: Colors.purple),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ));
   }
 }
