@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePagerState createState() => _MyHomePagerState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  String _origin = ''.toLowerCase();
-  String _destination = ''.toLowerCase();
+class _MyHomePagerState extends State<MyHomePage> {
+  String _origin = '';
+  String _destination = '';
   String _matchingBusName = '';
 
   final List<Map<String, dynamic>> _buses = [
     {
-      'busName': 'Achim Paribahan',
+      'busName': 'Raida',
       'locations': ['khilkhet', 'airport', 'rampura'],
     },
     {
@@ -21,17 +21,25 @@ class _MyHomePageState extends State<MyHomePage> {
     },
   ];
 
-  void _findMatchingBus() {
-    for (int i = 0; i < _buses.length; i++) {
-      List<String> busLocations = _buses[i]['locations'];
-      if (busLocations.contains(_origin) &&
-          busLocations.contains(_destination)) {
+  List<String> originSuggestions = ['airport', 'khilkhet', 'rampura'];
+  List<String> destinationSuggestions = ['banani', 'bashundhara', 'gulshan'];
+
+  TextEditingController _originController = TextEditingController();
+  TextEditingController _destinationController = TextEditingController();
+
+  void _findMatchingBusName() {
+    for (final bus in _buses) {
+      if (bus['locations'].contains(_origin.toLowerCase()) &&
+          bus['locations'].contains(_destination.toLowerCase())) {
         setState(() {
-          _matchingBusName = _buses[i]['busName'];
+          _matchingBusName = bus['busName'];
         });
-        break;
+        return;
       }
     }
+    setState(() {
+      _matchingBusName = 'No matching bus found';
+    });
   }
 
   @override
@@ -41,45 +49,86 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('Bus Finder'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Origin',
-              ),
-              onChanged: (value) {
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                return originSuggestions
+                    .where((suggestion) => suggestion
+                        .startsWith(textEditingValue.text.toLowerCase()))
+                    .toList();
+              },
+              onSelected: (String selected) {
                 setState(() {
-                  _origin = value.toLowerCase();
+                  _originController.text = selected;
+                  _origin = selected;
                 });
               },
-            ),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Destination',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _destination = value.toLowerCase();
-                });
+              fieldViewBuilder: (BuildContext context,
+                  TextEditingController controller,
+                  FocusNode focusNode,
+                  VoidCallback onFieldSubmitted) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    labelText: 'Origin',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _origin = value;
+                    });
+                  },
+                );
               },
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                return destinationSuggestions
+                    .where((suggestion) => suggestion
+                        .startsWith(textEditingValue.text.toLowerCase()))
+                    .toList();
+              },
+              onSelected: (String selected) {
+                setState(() {
+                  _destinationController.text = selected;
+                  _destination = selected;
+                });
+              },
+              fieldViewBuilder: (BuildContext context,
+                  TextEditingController controller,
+                  FocusNode focusNode,
+                  VoidCallback onFieldSubmitted) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    labelText: 'Destination',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _destination = value;
+                    });
+                  },
+                );
+              },
+            ),
+            SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: _findMatchingBus,
-              child: Text('Find Bus'),
+              onPressed: _findMatchingBusName,
+              child: Text('Find Matching Bus'),
             ),
-            SizedBox(height: 16.0),
-            _matchingBusName.isNotEmpty
-                ? Text(
-                    'Matching Bus: $_matchingBusName',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : SizedBox.shrink(),
+            SizedBox(height: 20.0),
+            Text(
+              _matchingBusName,
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
